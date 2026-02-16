@@ -1,11 +1,9 @@
 from fastapi import FastAPI, APIRouter, Depends
-import os
 from app.config.settings import settings
 
 router = APIRouter( prefix="/helth" ,   tags=["V1"],)
 
 @router.get("/")
-#async def welcome(app_settings: Settings = Depends(Settings)):
 async def welcome():
    
     app_name = settings.APP_NAME

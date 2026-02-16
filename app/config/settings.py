@@ -16,6 +16,12 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
+
+    
+    FILE_ALLOWED_TYPES: list = ["text/csv", "application/pdf", "text/plain", "application/json"]
+    FILE_ALLOWED_SIZE: int = 10  # in MB
+
+
     class config:
         env_file =".env"
     
