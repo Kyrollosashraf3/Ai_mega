@@ -17,10 +17,15 @@ conda activate mega
 ```bash
 $ notepad $PROFILE
 ```
-
 function prompt {
-    "$env:USERNAME@$env:COMPUTERNAME $(Get-Location)`n> "
+    $envName = ""
+    if ($env:CONDA_DEFAULT_ENV) {
+        $envName = "($env:CONDA_DEFAULT_ENV) "
+    }
+
+    "$envName$(Get-Location)`n> "
 }
+
 
 
 
@@ -40,3 +45,11 @@ $ cp .env.example .env
 ```
 
 Set your environment variables in the `.env` file. Like `OPENAI_API_KEY` value.
+
+
+
+
+## Run
+```bash
+$ uvicorn app.main:app -- reload --host 0.0.0.0  -port 8000
+```

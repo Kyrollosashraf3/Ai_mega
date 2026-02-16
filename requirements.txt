@@ -2,3 +2,8 @@ fastapi ==  0.129.0
 uvicorn == 0.40.0
 python-multipart == 0.0.22  # for file upload
 
+
+# Pydantic for data validation
+pydantic==2.12.3
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
