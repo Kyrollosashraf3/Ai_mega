@@ -7,3 +7,5 @@ python-multipart == 0.0.22  # for file upload
 pydantic==2.12.3
 pydantic-settings==2.1.0
 python-dotenv==1.0.0
+
+aiofiles == 25.1.0    # for save uploaded files as chuncks in temp 

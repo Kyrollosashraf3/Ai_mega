@@ -6,14 +6,13 @@ from fastapi import FastAPI, Request, status
 #from fastapi.middleware.cors import CORSMiddleware
 #from fastapi.responses import JSONResponse
 #from fastapi.exceptions import RequestValidationError
-from app.config.logger import get_logger
 
 from app.routes.base import router as home_router
 from app.routes.chat import router as chat_router
 from app.routes.data import router as file_router
 
-
-#logger = get_logger(__name__)
+from app.config import get_logger
+logger = get_logger(__name__)
 
 # Create FastAPI app
 app = FastAPI(

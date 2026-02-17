@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, Depends
-from app.config.settings import settings
+from app.config import settings
 
 router = APIRouter( prefix="/helth" ,   tags=["V1"],)
 
