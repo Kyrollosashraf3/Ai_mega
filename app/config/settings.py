@@ -21,6 +21,9 @@ class Settings(BaseSettings):
 
     FILE_PATH: Path = Path("app/my_files")
     FILE_DEFAULT_CHUNK_SIZE: int =256000 #bytes 
+
+    MONGODB_URL:str = "mongodb://localhost:27007"
+    MONGODB_DATABASE:str = "Ai_mega"
     class config:
         env_file =".env"
         case_sensitive = True 

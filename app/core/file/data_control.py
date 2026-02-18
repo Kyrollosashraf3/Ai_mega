@@ -14,12 +14,12 @@ class DataControl(FileBase):
     def validate_uploaded_file (self , file: UploadFile):
             
         # Check File Type
-        if file.content_type not in self.app_settings.FILE_ALLOWED_TYPES:
+        if file.content_type not in self.settings.FILE_ALLOWED_TYPES:
             logger.info(f" {signal.FILE_TYPE_NOT_SUPPORTED.value} this file content type is:{file.content_type}")
             return False
 
         # Check File Size as bytes 
-        if file.size > self.app_settings.FILE_ALLOWED_SIZE *1024*1024 : 
+        if file.size > self.settings.FILE_ALLOWED_SIZE *1024*1024 : 
             logger.info(f" {signal.FILE_SIZE_EXCEEDED.value} this file size is:{round(file.size/(1028*1028),2)}   MB")
             return False 
 
@@ -39,7 +39,7 @@ class DataControl(FileBase):
         clean_file_name = self.get_clean_file_name(orig_file_name  = orig_file_name  )
         file_id = random_key + "_" + clean_file_name
 
-        project_path = self.get_file_path(project_id= project_id)
+        project_path = self.get_project_path(project_id= project_id)
         new_file_path = os.path.join(project_path,  file_id)
                                   
         
@@ -67,7 +67,7 @@ class DataControl(FileBase):
 
 
 
-    def get_file_path(self, project_id):
+    def get_project_path(self, project_id):
         
         # generate new dir 
         project_dir = os.path.join(

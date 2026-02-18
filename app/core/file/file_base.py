@@ -4,11 +4,10 @@ import string
 import random
 
 class FileBase: 
-
     
     def __init__(self):
         
-        self.app_settings = settings
+        self.settings = settings
 
         self.base_dir = settings.FILE_PATH
         self.files_dir = os.path.join(
