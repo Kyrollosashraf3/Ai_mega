@@ -1,55 +1,77 @@
+# MEGA - AI Agent Framework
 
+MEGA is a production-ready AI agent framework built with FastAPI. It features a robust architecture for handling file uploads, data processing (RAG), and persistent storage using MongoDB.
 
-requirements: 
-- python 3.8
-- Fastapi
-- uvicorn [standaed]
+## 🚀 Key Features
 
+- **Asynchronous FastAPI Architecture**: High-performance, non-blocking API handling.
+- **File Management**: Support for uploading and processing `text/plain` and `application/pdf` files.
+- **RAG Data Processing**: Automated chunking and metadata extraction for document-based AI workflows.
+- **MongoDB Integration**: Permanent storage for projects and document chunks using Motor (async driver).
+- **Custom Schema Validation**: Robust Pydantic models with custom validators for handling MongoDB ObjectIds.
+- **Project-based Isolation**: Data is organized and isolated by `project_id`.
 
-create environment with conda 
-conda create -n mega
+## 🛠 Tech Stack
 
-active it using  : conda activate ...
-conda activate mega
+- **Framework**: [FastAPI](https://fastapi.tiangolo.com/)
+- **Database**: [MongoDB](https://www.mongodb.com/) (using [Motor](https://motor.readthedocs.io/))
+- **Data Validation**: [Pydantic v2](https://docs.pydantic.dev/)
+- **File Handling**: [aiofiles](https://github.com/Tinche/aiofiles)
+- **Environment Management**: [pydantic-settings](https://docs.pydantic.dev/latest/usage/pydantic_settings/)
 
+## 📂 Project Structure
 
-# optional :  put in teminal 
-```bash
-$ notepad $PROFILE
-```
-function prompt {
-    $envName = ""
-    if ($env:CONDA_DEFAULT_ENV) {
-        $envName = "($env:CONDA_DEFAULT_ENV) "
-    }
-
-    "$envName$(Get-Location)`n> "
-}
-
-
-
-
-
-## Installation
-
-### Install the required packages
-
-```bash
-$ pip install -r requirements.txt
+```text
+Ai_mega/
+├── app/
+│   ├── config/         # Application settings and logging
+│   ├── core/           # Core logic for file processing
+│   ├── db/             # Database models and clients
+│   ├── models/         # Pydantic/Database schemas
+│   ├── routes/         # API endpoints (Chat, Data, Base)
+│   └── main.py         # Application entry point
+├── scripts/            # Utility and verification scripts
+├── my_files/           # local storage for uploaded files
+└── requirements.txt    # Project dependencies
 ```
 
-### Setup the environment variables
+## 🔌 API Endpoints
 
-```bash
-$ cp .env.example .env
+### Health Check
+- `GET /helth/`: Check application health and version.
+
+### Chat
+- `GET /chat/`: Welcome endpoint for the chat service.
+
+### Data & Files
+- `POST /data/upload/{project_id}`: Upload a new file for a project.
+- `POST /process/upload/{project_id}`: Process an uploaded file into chunks.
+- `DELETE /process/delete/{project_id}`: Delete all processed chunks associated with a project.
+
+## ⚙️ Configuration
+
+Create a `.env` file in the root directory:
+
+```env
+APP_NAME=MEGA
+APP_VERSION=0.0.1
+MONGODB_URL=mongodb://localhost:27007
+MONGODB_DATABASE=Ai_mega
+DEBUG=True
 ```
 
-Set your environment variables in the `.env` file. Like `OPENAI_API_KEY` value.
+## 🏃 Getting Started
 
+1. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
+2. **Run the application**:
+   ```bash
+   uvicorn app.main:app --reload
+   ```
 
-
-## Run
-```bash
-$ uvicorn app.main:app -- reload --host 0.0.0.0  -port 8000
-```
+3. **Access Documentation**:
+   - Swagger UI: `http://localhost:8000/docs`
+   - Redoc: `http://localhost:8000/redoc`

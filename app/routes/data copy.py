@@ -140,7 +140,7 @@ async def process_tool(request: Request, project_id: str, process_request:Proces
 
 router3 = APIRouter( prefix="/process" ,   tags=["files"])
 
-@router3.delete("/delete/{project_id}")
+@router3.post("/delete/{project_id}")
 async def delete_data(request: Request, project_id: str):
     project_model = ProjectModel(db_client=request.app.db_client)
     project = await project_model.get_project(project_id=project_id)

@@ -11,6 +11,7 @@ from app.routes.base import router as home_router
 from app.routes.chat import router as chat_router
 from app.routes.data import router1 as file_router
 from app.routes.data import router2 as data_process_router
+from app.routes.data import router3 as data_delete_router
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.config import settings
@@ -42,3 +43,4 @@ app.include_router(home_router)
 app.include_router(chat_router)
 app.include_router(file_router)
 app.include_router(data_process_router)
+app.include_router(data_delete_router)
