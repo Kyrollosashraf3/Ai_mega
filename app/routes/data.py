@@ -14,8 +14,8 @@ from app.config import get_logger ,signal
 logger = get_logger(__name__)
 
 
-router1 = APIRouter( prefix="/data" ,   tags=["files"])
-@router1.post("/upload/{project_id}")
+file_router = APIRouter( prefix="/data" ,   tags=["files"])
+@file_router.post("/upload/{project_id}")
 async def upload_data( request: Request, project_id: str, file: UploadFile  ):
     
 
@@ -67,9 +67,9 @@ async def upload_data( request: Request, project_id: str, file: UploadFile  ):
         )
 
 
-router2 = APIRouter( prefix="/process" ,   tags=["files"])
+data_process_router = APIRouter( prefix="/process" ,   tags=["files"])
 
-@router2.post("/upload/{project_id}")
+@data_process_router.post("/upload/{project_id}")
 async def process_tool(request: Request, project_id: str, process_request:ProcessRequest):
    
     file_id = process_request.file_id
@@ -138,9 +138,9 @@ async def process_tool(request: Request, project_id: str, process_request:Proces
 
 
 
-router3 = APIRouter( prefix="/process" ,   tags=["files"])
+data_delete_router = APIRouter( prefix="/process" ,   tags=["files"])
 
-@router3.delete("/delete/{project_id}")
+@data_delete_router.delete("/delete/{project_id}")
 async def delete_data(request: Request, project_id: str):
     project_model = ProjectModel(db_client=request.app.db_client)
     project = await project_model.get_project(project_id=project_id)

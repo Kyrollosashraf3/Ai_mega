@@ -9,9 +9,11 @@ from fastapi import FastAPI, Request, status
 
 from app.routes.base import router as home_router
 from app.routes.chat import router as chat_router
-from app.routes.data import router1 as file_router
-from app.routes.data import router2 as data_process_router
-from app.routes.data import router3 as data_delete_router
+
+
+from app.routes.data import file_router 
+from app.routes.data import data_process_router 
+from app.routes.data import data_delete_router 
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.config import settings
