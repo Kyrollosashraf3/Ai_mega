@@ -2,10 +2,14 @@ from pydantic import BaseModel, Field, validator, BeforeValidator
 from typing import Optional, Annotated
 from bson import ObjectId
 from app.config import settings
+from datetime import datetime
 
 
 # Custom type to handle MongoDB ObjectId as a string in Pydantic
 PyObjectId = Annotated[str, BeforeValidator(lambda v: str(v) if isinstance(v, ObjectId) else v)]
+
+
+###======== Project =========###
 
 class Project(BaseModel):
     """ how to save Project in Mongo DB """
@@ -27,7 +31,7 @@ class Project(BaseModel):
 
     @classmethod
     def get_indexes(cls):
-
+        # index for project_id
         return [
             {
                 "key": [ ("project_id", 1) ],
@@ -36,6 +40,8 @@ class Project(BaseModel):
             }
         ]
 
+
+###======== DataChunk =========###
 
 class DataChunk(BaseModel):
     """ how to save Chunks in Mongo DB"""
@@ -52,6 +58,7 @@ class DataChunk(BaseModel):
 
     @classmethod
     def get_indexes(cls):
+        # index for chunk_project_id
         return [
             {
                 "key": [
@@ -60,4 +67,40 @@ class DataChunk(BaseModel):
                 "name": "chunk_project_id_index_1",
                 "unique": False
             }
+        ]
+
+
+###======== Asset =========###
+
+class Asset(BaseModel):
+    id: Optional[PyObjectId] = Field(None, alias="_id")
+    asset_project_id: PyObjectId
+    asset_type: str = Field(..., min_length=1)
+    asset_name: str = Field(..., min_length=1)
+    asset_size: int = Field(ge=0, default=None)
+    asset_config: dict = Field(default=None)
+    asset_pushed_at: datetime = Field(default=datetime.utcnow)
+
+    class Config:
+        arbitrary_types_allowed = True
+
+    @classmethod
+    def get_indexes(cls):
+        # index for asset_project_id and asset_name together
+        return [
+            {
+                "key": [
+                    ("asset_project_id", 1)
+                ],
+                "name": "asset_project_id_index_1",
+                "unique": False
+            },
+            {
+                "key": [
+                    ("asset_project_id", 1),
+                    ("asset_name", 1)
+                ],
+                "name": "asset_project_id_name_index_1",
+                "unique": True
+            },
         ]

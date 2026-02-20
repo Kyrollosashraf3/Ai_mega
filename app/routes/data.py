@@ -5,16 +5,16 @@ import os
 import aiofiles
 
 from app.core.file import DataControl, DataProcess
-from app.models import ProcessRequest , DataChunk , Project
-from app.db import ProjectModel , chunkModel
-
-
+from app.models import ProcessRequest , DataChunk , Project , Asset
+from app.db import ProjectModel , chunkModel , AssetModel
 
 from app.config import get_logger ,signal
 logger = get_logger(__name__)
 
 
+
 file_router = APIRouter( prefix="/data" ,   tags=["files"])
+
 @file_router.post("/upload/{project_id}")
 async def upload_data( request: Request, project_id: str, file: UploadFile  ):
     
@@ -30,21 +30,17 @@ async def upload_data( request: Request, project_id: str, file: UploadFile  ):
         return JSONResponse (status_code = 400  ,
                             content = {"is_validate" : is_validate }  )
                             
-
-    # prepare folder - file path : no Dublication  
-    """#project_dir_path= DataControl().get_project_path(project_id = project_id)
-    #file_path = os.path.join( project_dir_path,  file.filename ) """
-
     # prepare folder - file path with unique file name 
     file_path , file_id = DataControl().generate_unique_filepath( orig_file_name=file.filename,
         project_id=project_id)
     
 
-    # file to chunks >>> save chunk by chunk
+    # file to chunks >>> save chunk by chunk 
     try:
         async with aiofiles.open(file_path, "wb") as f:
             while chunk := await file.read(settings.FILE_DEFAULT_CHUNK_SIZE):
                 await f.write(chunk)
+              
     except Exception as e:
         logger.error(f"Error while uploading file - look data route {e}")
 
@@ -55,11 +51,24 @@ async def upload_data( request: Request, project_id: str, file: UploadFile  ):
             }
         )
 
+    # store asset into db
+    asset_model = await AssetModel.create_instance(db_client= request.app.db_client)
+    
+    asset_resource = Asset(
+        asset_project_id=project.id,
+        asset_type="File",
+        as set_name=file_id,
+        asset_size=os.path.getsize(file_path)
+    )
+
+    asset_record = await asset_model.create_asset(asset=asset_resource)
+
     return JSONResponse(
             content={
                 "signal": signal.FILE_UPLOAD_SUCCESS.value,
-               "file_id": file_id,
-               "project_id": str (project_id)
+                "file_id": file_id,
+                "asset_name" : asset_resource.asset_name,
+                "project_id": str (project.id)
 
             }
         )

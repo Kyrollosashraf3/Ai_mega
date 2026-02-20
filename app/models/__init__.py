@@ -1,3 +1,3 @@
 from .schemas import ProcessRequest
 
-from .db_schemas import DataChunk , Project
+from .db_schemas import DataChunk , Project , Asset

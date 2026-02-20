@@ -17,7 +17,7 @@ class chunkModel :
         self.db_client = db_client
         self.settings = settings
 
-        self.collection = self.db_client["chunk"]
+        self.collection = self.db_client[settings.COLLECTION_CHUNKS]
 
 
     @classmethod
@@ -31,9 +31,9 @@ class chunkModel :
     async def init_collection(self):
         # get collection names to check if collection exists
         all_collections = await self.db_client.list_collection_names()   
-        if "chunk" not in all_collections:
+        if settings.COLLECTION_CHUNKS not in all_collections:
             # Create collection if not exists
-            self.collection = self.db_client["chunk"]
+            self.collection = self.db_client[settings.COLLECTION_CHUNKS]
             logger.info("Collection 'chunk' created successfully")
 
             # Create indexes

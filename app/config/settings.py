@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     MONGODB_URL: str
     MONGODB_DATABASE: str
 
+    # Colection names
+    COLLECTION_PROJECT: str
+    COLLECTION_CHUNK: str
+    COLLECTION_ASSET: str
+    
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
