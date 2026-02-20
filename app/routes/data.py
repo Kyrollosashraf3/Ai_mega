@@ -57,7 +57,7 @@ async def upload_data( request: Request, project_id: str, file: UploadFile  ):
     asset_resource = Asset(
         asset_project_id=project.id,
         asset_type="File",
-        as set_name=file_id,
+        asset_name=file_id,
         asset_size=os.path.getsize(file_path)
     )
 
