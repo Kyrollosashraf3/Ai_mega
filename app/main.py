@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request, status
 #from fastapi.responses import JSONResponse
 #from fastapi.exceptions import RequestValidationError
 
+
 from app.routes.base import router as home_router
 from app.routes.chat import router as chat_router
 

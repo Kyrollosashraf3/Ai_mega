@@ -1,16 +1,13 @@
 from fastapi import FastAPI, APIRouter, Depends
 from app.config import settings
 
-router = APIRouter( prefix="/helth" ,   tags=["V1"],)
+router = APIRouter(   tags=["V1"],)
 
 @router.get("/")
-async def welcome():
+async def health():
    
     app_name = settings.APP_NAME
     app_version = settings.APP_VERSION
-    #app_name = "MEGA AI    "
-    #app_version = "0.0.1 .."
-
     return {
         "app_name": app_name,
         "app_version": app_version,

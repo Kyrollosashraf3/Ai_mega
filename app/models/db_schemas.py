@@ -25,6 +25,17 @@ class Project(BaseModel):
         arbitrary_types_allowed = True
         populate_by_name = True
 
+    @classmethod
+    def get_indexes(cls):
+
+        return [
+            {
+                "key": [ ("project_id", 1) ],
+                "name": "project_id_index_1",
+                "unique": True
+            }
+        ]
+
 
 class DataChunk(BaseModel):
     """ how to save Chunks in Mongo DB"""
@@ -39,4 +50,14 @@ class DataChunk(BaseModel):
         populate_by_name = True
 
 
-
+    @classmethod
+    def get_indexes(cls):
+        return [
+            {
+                "key": [
+                    ("chunk_project_id", 1)
+                ],
+                "name": "chunk_project_id_index_1",
+                "unique": False
+            }
+        ]

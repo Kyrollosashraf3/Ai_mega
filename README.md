@@ -38,7 +38,7 @@ Ai_mega/
 ## 🔌 API Endpoints
 
 ### Health Check
-- `GET /helth/`: Check application health and version.
+- `GET /`: Check application health and version.
 
 ### Chat
 - `GET /chat/`: Welcome endpoint for the chat service.
@@ -55,7 +55,7 @@ Create a `.env` file in the root directory:
 ```env
 APP_NAME=MEGA
 APP_VERSION=0.0.1
-MONGODB_URL=mongodb://localhost:27007
+MONGODB_URL= "mongodb://user:password@localhost:27007"
 MONGODB_DATABASE=Ai_mega
 DEBUG=True
 ```
@@ -75,3 +75,23 @@ DEBUG=True
 3. **Access Documentation**:
    - Swagger UI: `http://localhost:8000/docs`
    - Redoc: `http://localhost:8000/redoc`
+
+
+
+
+   ## MongoDB
+   we have 2 collections : 
+   1- projects : 
+   2- chunks : 
+
+   they connected with project_id : that _id of project = chunks.project_id  
+   
+
+   WITH username and password
+
+   ## docker 
+
+   docker-compose up -d  
+   it has : mongodb servise as vertual network with image mongo:7-jammy
+   with ROOT_USERNAM and ROOT_PASSWORD from .env file 
+

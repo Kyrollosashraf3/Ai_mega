@@ -6,6 +6,10 @@ from numpy import insert
 from app.config import settings
 from app.models.db_schemas import DataChunk
 from pymongo import InsertOne  # collect chunks into bulks 
+from app.config import get_logger
+
+logger = get_logger(__name__)
+
 
 class chunkModel :
 
@@ -14,6 +18,40 @@ class chunkModel :
         self.settings = settings
 
         self.collection = self.db_client["chunk"]
+
+
+    @classmethod
+    async def create_instance(cls, db_client: object): 
+        # init collection and indexes
+        instance = cls(db_client)   # __init__ call 
+        await instance.init_collection()
+        return instance
+
+
+    async def init_collection(self):
+        # get collection names to check if collection exists
+        all_collections = await self.db_client.list_collection_names()   
+        if "chunk" not in all_collections:
+            # Create collection if not exists
+            self.collection = self.db_client["chunk"]
+            logger.info("Collection 'chunk' created successfully")
+
+            # Create indexes
+            indexes = DataChunk.get_indexes()
+            try:
+                for index in indexes:
+                    await self.collection.create_index(
+                        key= index["key"],
+                        name=index["name"],
+                        unique=index["unique"]
+                    )
+                logger.info("Indexes created successfully")
+            except Exception as e:
+                logger.error(f"Error creating indexes: {e}")
+
+
+
+
 
     
     async def create_chunk (self , chunk : DataChunk):

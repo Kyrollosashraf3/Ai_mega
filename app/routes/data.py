@@ -19,11 +19,9 @@ file_router = APIRouter( prefix="/data" ,   tags=["files"])
 async def upload_data( request: Request, project_id: str, file: UploadFile  ):
     
 
-    project_model= ProjectModel( db_client= request.app.db_client)
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
     
-    project = await project_model.get_project(
-            project_id=project_id
-        )
+    project = await project_model.get_project( project_id=project_id )
 
 
     # Validate file size, TYPES 
@@ -116,7 +114,7 @@ async def process_tool(request: Request, project_id: str, process_request:Proces
     ]
 
 
-    chunk_model = chunkModel( db_client=request.app.db_client)
+    chunk_model = await chunkModel.create_instance( db_client=request.app.db_client)
 
     if do_reset == 1:
         _ = await chunk_model.delete_chunks_by_project_id(
@@ -142,10 +140,12 @@ data_delete_router = APIRouter( prefix="/process" ,   tags=["files"])
 
 @data_delete_router.delete("/delete/{project_id}")
 async def delete_data(request: Request, project_id: str):
-    project_model = ProjectModel(db_client=request.app.db_client)
+
+    project_model = await ProjectModel.create_instance(db_client=request.app.db_client)
+
     project = await project_model.get_project(project_id=project_id)
-    
-    chunk_model = chunkModel(db_client=request.app.db_client)
+
+    chunk_model =await chunkModel.create_instance(db_client=request.app.db_client)
     no_records = await chunk_model.delete_chunks_by_project_id(
             project_id= project.id
         )
