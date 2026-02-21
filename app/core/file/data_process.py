@@ -55,6 +55,10 @@ class DataProcess(FileBase):
             file_id
         )
         
+        # check if file exist
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+
         # check ext and load 
         if file_ext == ".txt":
             logger.info(f"load .txt success")
@@ -72,9 +76,14 @@ class DataProcess(FileBase):
         loader = self.get_file_loader(file_id=file_id)
         if loader is None:
             raise ValueError(f"Unsupported file type for file: {file_id}")
+            return None
+           
+        try:
+            return loader.load()  # give me List of documents :[file_contents] with text(page_content)_ + metadata >>> export it 
+        except Exception as e:
+            logger.error(f"Error while loading file - look data route {e}")
+            return None
 
-
-        return loader.load()  # give me List of documents :[file_contents] with text(page_content)_ + metadata >>> export it 
 
     def process_file_content(self, file_content: list, file_id: str,
                             chunk_size: int=100000 , overlap_size: int=100):

@@ -56,7 +56,7 @@ async def upload_data( request: Request, project_id: str, file: UploadFile  ):
     
     asset_resource = Asset(
         asset_project_id=project.id,
-        asset_type="File",
+        asset_type="file",
         asset_name=file_id,
         asset_size=os.path.getsize(file_path)
     )
@@ -79,64 +79,120 @@ data_process_router = APIRouter( prefix="/process" ,   tags=["files"])
 @data_process_router.post("/upload/{project_id}")
 async def process_tool(request: Request, project_id: str, process_request:ProcessRequest):
    
-    file_id = process_request.file_id
+   #file_id = process_request.file_id
     chunk_size = process_request.chunk_size
     overlap_size = process_request.overlap_size
     do_reset = process_request.do_reset
 
-    project_model= ProjectModel( db_client= request.app.db_client)
-    
+    # create db instances
+    project_model=await ProjectModel.create_instance( db_client= request.app.db_client)
+    chunk_model = await   chunkModel.create_instance( db_client=request.app.db_client)  
+    asset_model = await   AssetModel.create_instance( db_client=request.app.db_client)
+
     project = await project_model.get_project( project_id= project_id )
-
-
     Data_process = DataProcess(project_id = project_id )
-    file_content = Data_process.get_file_content(file_id = file_id)
+    
+   
+    # Collect all project files 
+    project_files_ids = {}
 
+    # if file_id is provided : just 1 file
+    if process_request.file_id:
 
-    file_chunks = Data_process.process_file_content(
-        file_content=file_content,
-        file_id=file_id,
-        chunk_size=chunk_size,
-        overlap_size=overlap_size
-    )
+        # asset_record with Asset schema
+        asset_record = await asset_model.get_asset_record(
+            asset_project_id=project.id, # _id in mongo
+            asset_name=process_request.file_id # name
+        )
 
+        if asset_record is None:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "signal": "FILE_ID process ERROR _ get_asset does not work ",
+                } )
 
+        # get_asset returns Asset schema with {new  _id : file_name }
+        project_files_ids = {
+            asset_record.id: asset_record.asset_name }
+       
+    else:
+        # request without file_id : process all files in project using its _id
+        project_files = await asset_model.get_asset(
+            asset_project_id=project.id,
+            asset_type="file",
+        )
 
-    if file_chunks is None or len(file_chunks) == 0:
+        # get_asset returns Asset schema with {new  _id : file_name / asset_name }
+        project_files_ids = {
+            record.id: record.asset_name
+            for record in project_files
+        }
+
+    if len(project_files_ids) == 0:
         return JSONResponse(
             status_code=400,
             content={
-                "signal": "PROCESSING_FAILED"
+                "signal": "NO_FILES_FOUND",
             }
         )
-
-
-    # prepare to insert chunks to mongo 
-    file_chunks_records = [
-        DataChunk(
-            chunk_text=chunk.page_content,
-            chunk_metadata=chunk.metadata,
-            chunk_order=i+1,
-            chunk_project_id=project.id,
-        )
-        for i, chunk in enumerate(file_chunks)
-    ]
-
-
-    chunk_model = await chunkModel.create_instance( db_client=request.app.db_client)
+    
 
     if do_reset == 1:
         _ = await chunk_model.delete_chunks_by_project_id(
             project_id=project.id
         )
 
-    no_records = await chunk_model.insert_many_chunks(chunks=  file_chunks_records)  # with batches
+    no_records = 0
+    no_files = 0
+    
+
+    """    
+    asset_id is new _id of asset/file in asset collection
+    asset_name is name of asset/file in asset collection
+    """
+    for asset_id, asset_name in project_files_ids.items():
+        file_content = Data_process.get_file_content(file_id = asset_name)
+        if file_content is None:
+            logger.error(f"Error while processing file: {asset_name}")
+            continue
+
+        file_chunks = Data_process.process_file_content(
+            file_content=file_content,
+            file_id=asset_name,
+            chunk_size=chunk_size,
+            overlap_size=overlap_size)
 
 
+        if file_chunks is None or len(file_chunks) == 0:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "signal": "PROCESSING_FAILED"
+                }
+        )
+
+
+        # prepare to insert chunks to mongo 
+        file_chunks_records = [
+            DataChunk(
+                chunk_text=chunk.page_content,
+                chunk_metadata=chunk.metadata,
+                chunk_order=i+1,
+                chunk_project_id=project.id,
+                chunk_asset_id=asset_id,
+            )
+            for i, chunk in enumerate(file_chunks)
+        ]
+
+        no_records += await chunk_model.insert_many_chunks(chunks= file_chunks_records)  # with batches
+        no_files += 1
+        
     return JSONResponse(
         content={
             "signal": "PROCESSING_SUCCESS",
-            "inserted_chunks": no_records
+            "inserted_chunks": no_records,
+            "inserted_files": no_files  
         }
     )
 

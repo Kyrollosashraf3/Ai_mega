@@ -4,7 +4,7 @@ from numpy import insert
 from app.config import settings
 from app.models.db_schemas import Asset
 from app.config import get_logger
-
+from bson import ObjectId
 
 logger = get_logger(__name__)
 
@@ -29,6 +29,11 @@ class AssetModel :
 
         # get collection names to check if collection exists
         all_collections = await self.db_client.list_collection_names()   
+
+
+        print(all_collections)
+        print(settings.COLLECTION_ASSET)
+
         if settings.COLLECTION_ASSET not in all_collections:
             # Create collection if not exists
             self.collection = self.db_client[settings.COLLECTION_ASSET]
@@ -39,7 +44,7 @@ class AssetModel :
             try:
                 for index in indexes:
                     await self.collection.create_index(
-                        key= index["key"],
+                        keys= index["key"],
                         name=index["name"],
                         unique=index["unique"]
                     )
@@ -60,8 +65,27 @@ class AssetModel :
 
         return asset
     
-    async def get_asset (self, asset_project_id : str):
+    async def get_asset (self, asset_project_id : str, asset_type: str):
+
+        records = await self.collection.find({
+            "asset_project_id": asset_project_id,
+            "asset_type": asset_type
+        }).to_list(length=None) # get all
+
+        return[
+            Asset(**record) for record in records
+        ]
+
+
+
+    async def get_asset_record(self, asset_project_id: str, asset_name: str):
 
         record = await self.collection.find_one({
-            "asset_project_id": ObjectId(asset_project_id) if isinstance(asset_project_id, str) else asset_project_id
-        }).to_list(length=None) # get all
+            "asset_project_id": asset_project_id,
+            "asset_name": asset_name,
+        })
+
+        if record:
+            return Asset(**record)
+        
+        return None

@@ -18,6 +18,7 @@ from app.routes.data import data_delete_router
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.config import settings
+from app.db import ProjectModel, AssetModel, chunkModel
 
 from app.config import get_logger
 logger = get_logger(__name__)
@@ -35,6 +36,14 @@ app = FastAPI(
 async def startup_db_client():
     app.mongo_conn = AsyncIOMotorClient(settings.MONGODB_URL)
     app.db_client = app.mongo_conn[settings.MONGODB_DATABASE]
+
+    # Initialize collections and indexes
+    # await ProjectModel.create_instance(app.db_client)
+    # await AssetModel.create_instance(app.db_client)
+    # await chunkModel.create_instance(app.db_client)
+
+    #logger.info("MongoDB connected and collections initialized.")
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

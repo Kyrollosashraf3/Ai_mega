@@ -50,6 +50,7 @@ class DataChunk(BaseModel):
     chunk_metadata: dict
     chunk_order: int = Field(..., gt=0)
     chunk_project_id: str
+    chunk_asset_id: PyObjectId
 
     class Config:
         arbitrary_types_allowed = True
@@ -74,15 +75,17 @@ class DataChunk(BaseModel):
 
 class Asset(BaseModel):
     id: Optional[PyObjectId] = Field(None, alias="_id")
-    asset_project_id: PyObjectId
+    asset_project_id: PyObjectId                 # project_id
+    asset_name: str = Field(..., min_length=1)   # file_name
+
     asset_type: str = Field(..., min_length=1)
-    asset_name: str = Field(..., min_length=1)
     asset_size: int = Field(ge=0, default=None)
     asset_config: dict = Field(default=None)
     asset_pushed_at: datetime = Field(default=datetime.utcnow)
 
     class Config:
         arbitrary_types_allowed = True
+
 
     @classmethod
     def get_indexes(cls):

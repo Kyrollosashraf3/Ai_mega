@@ -34,9 +34,10 @@ class ProjectModel :
             # Create indexes
             indexes = Project.get_indexes()
             try:
+                
                 for index in indexes:
                     await self.collection.create_index(
-                        key= index["key"],
+                        keys= index["key"],
                         name=index["name"],
                         unique=index["unique"]
                     )
