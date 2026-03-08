@@ -96,3 +96,11 @@ DEBUG=True
    it has : mongodb servise as vertual network with image mongo:7-jammy
    with ROOT_USERNAM and ROOT_PASSWORD from .env file 
 
+
+
+# To Run
+- cd docker
+- docker-compose up -d
+
+- conda activate mega1
+- uvicorn app.main:app --reload

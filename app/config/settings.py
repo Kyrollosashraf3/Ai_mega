@@ -32,6 +32,13 @@ class Settings(BaseSettings):
     COLLECTION_CHUNK: str
     COLLECTION_ASSET: str
     
+    # LLM  
+    OPENAI_API_KEY: str
+    GOOGLE_API_KEY: str
+    GROQ_API_KEY: str
+    MODELS_JSON_PATH: str
+
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
