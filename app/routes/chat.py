@@ -5,7 +5,7 @@ from app.config import settings
 from app.models.schemas import ChatRequest
 from app.config.logger import get_logger
 from app.core.llm.stream_handler import stream_model_family
-from app.core.llm.utils import get_model_family, validate_model_access
+from app.core.llm.utils import get_model_family, validate_model_access ,prepare_family_parameters
 from app.core.llm.call_handler import call_model_family
 from app.core.llm.token_counter import estimate_tokens_for_model, count_tokens_for_messages, format_usage_response
 
@@ -69,12 +69,17 @@ async def chat(request: ChatRequest):
     try:
         if not validate_model_access(request.model):
             raise HTTPException(status_code=403, detail="Access denied for this model")
-            
+        
+       
         if request.stream:
+            logger.info(f"[Chat] Request in streaming mode")
             return StreamingResponse(event_generator(request), media_type="text/event-stream")
+
         else:
-            response = prepare_family_parameters(request)
+            response = call_model_family(request)
+            logger.info(f"[Chat] Response in non-streaming mode")
             return response
+           
             
     except HTTPException:
         raise
