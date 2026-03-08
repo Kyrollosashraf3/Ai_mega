@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     GOOGLE_API_KEY: str
     GROQ_API_KEY: str
     MODELS_JSON_PATH: str
+    
+    PERPLEXITY_API_KEY: str
 
 
     model_config = SettingsConfigDict(

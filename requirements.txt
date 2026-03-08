@@ -11,7 +11,6 @@ python-dotenv==1.0.0
 aiofiles == 25.1.0    # for save uploaded files as chunks in temp 
 
 # Reading files
-#langchain==0.1.20
 langchain == 1.2.10
 langchain-community == 0.4.1
 
@@ -20,12 +19,12 @@ PyMuPDF==1.27.1
 motor ==  3.7.1
 
 
-
-
 # LLM Providers
 openai==2.6.0
 google-generativeai==0.8.5
 groq==0.37.1
 
-
 tiktoken==0.7.0 
+
+# WEB SEARCH
+perplexityai==0.20.0
