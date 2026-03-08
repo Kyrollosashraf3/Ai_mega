@@ -11,6 +11,10 @@ def call_model_family(req):
     """Standardized handler for non-streaming LLM requests."""
     logger.info(f"[Call] Processing model: {req.model}")
 
+    context_info = {}
+    combined_contexts = []
+    active_modes = []
+        
     # Ensure user message exists
             
     user_query = None
@@ -46,6 +50,30 @@ def call_model_family(req):
                 active_modes.append("web_search")
         except (PerplexityError, Exception) as e:
             logger.error(f"[Chat] Web search error: {type(e).__name__}: {str(e)}")
+
+
+    if combined_contexts:
+        combined_system_content = "You are provided with enriched context from multiple sources. Use ALL the information below to provide a comprehensive, accurate response.\n\n"
+        for mode_name, context_text in combined_contexts:
+            combined_system_content += f"=== {mode_name.upper()} ===\n{context_text}\n\n"
+        combined_system_content += "=== INSTRUCTIONS ===\n"
+            
+        if len(active_modes) > 1:
+            combined_system_content += f"Multiple information sources active: {', '.join(active_modes)}\nSynthesize information from all sources to provide a complete answer.\n"
+        citation_needed = False
+           
+        if "web_search" in active_modes:
+            combined_system_content += "- For web search information: Use the full URL in square brackets immediately after the information, e.g., [https://example.com]\n"
+            citation_needed = True
+        if citation_needed:
+            combined_system_content += "CRITICAL: Cite EVERY fact you use. Citations must be placed immediately after each piece of information.\n"
+           
+        combined_system_content += "\nProvide a natural, conversational response that integrates all available information."
+        context_message = MessageItem(role="system", content=combined_system_content)
+        messages_list = list(req.messages)
+        messages_list.insert(-1, context_message)
+        req.messages = messages_list
+
             
 
 
