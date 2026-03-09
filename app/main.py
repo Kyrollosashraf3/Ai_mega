@@ -10,6 +10,7 @@ from fastapi import FastAPI, Request, status
 
 from app.routes.base import router as home_router
 from app.routes.chat import router as chat_router
+from app.routes.logs import router as logs_router
 
 
 from app.routes.data import file_router 
@@ -56,3 +57,4 @@ app.include_router(chat_router)
 app.include_router(file_router)
 app.include_router(data_process_router)
 app.include_router(data_delete_router)
+app.include_router(logs_router)

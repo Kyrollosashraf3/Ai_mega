@@ -4,6 +4,8 @@ Provides centralized logging configuration.
 """
 import logging
 import sys
+import os
+from pathlib import Path
 from typing import Any
 
 
@@ -35,5 +37,17 @@ def get_logger(name: str) -> logging.Logger:
         console_handler.setFormatter(formatter)
         
         logger.addHandler(console_handler)
+
+        # File handler
+        log_dir = Path("app/logs")
+        if not log_dir.exists():
+            log_dir.mkdir(parents=True, exist_ok=True)
+        
+        log_file = log_dir / "app.log"
+        file_handler = logging.FileHandler(str(log_file), encoding='utf-8')
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+        
+        logger.addHandler(file_handler)
     
     return logger

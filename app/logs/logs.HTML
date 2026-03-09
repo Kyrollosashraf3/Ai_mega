@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEGA - Intelligence System Logs</title>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --bg: #03060a;
+            --surface: #0a0f18;
+            --surface-hover: #111a27;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-bright: rgba(255, 255, 255, 0.15);
+
+            --primary: #38bdf8;
+            --secondary: #a855f7;
+            --accent-gr: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%);
+
+            --debug: #94a3b8;
+            --info: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --text-muted: #64748b;
+
+            --ts-color: #38bdf8;
+            --src-color: #c084fc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 0% 100%, rgba(168, 85, 247, 0.03) 0%, transparent 40%);
+        }
+
+        /* Header glassmorphism */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(3, 6, 10, 0.7);
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-box {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-gr);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+            animation: pulse 4s infinite;
+        }
+
+        .logo-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: var(--accent-gr);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: dot-pulse 1.5s infinite;
+        }
+
+        @keyframes dot-pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.7rem 1.4rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(56, 189, 248, 0.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.active {
+            border-color: var(--info);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--info);
+        }
+
+        .btn-refresh i {
+            transition: transform 0.4s ease;
+        }
+
+        .btn-refresh:hover i {
+            transform: rotate(180deg);
+        }
+
+        .container {
+            padding: 2.5rem;
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        .logs-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .logs-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0.5;
+        }
+
+        .table-head {
+            display: grid;
+            grid-template-columns: 200px 120px 220px 1fr;
+            padding: 1.25rem 2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border);
+            color: var(--text-dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+        }
+
+        #logs-container {
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .log-row {
+            display: grid;
+            grid-template-columns: 200px 120px 220px 1fr;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            animation: slideIn 0.3s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .log-row:hover {
+            background: var(--surface-hover);
+            border-left: 2px solid var(--primary);
+            padding-left: calc(2rem - 2px);
+        }
+
+        .time {
+            color: var(--ts-color);
+            opacity: 0.9;
+        }
+
+        .level-cell {
+            display: flex;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-DEBUG {
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--debug);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .badge-INFO {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--info);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .badge-WARNING {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .badge-ERROR {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .source {
+            color: var(--src-color);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 1.5rem;
+        }
+
+        .message {
+            color: var(--text-main);
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        /* Loading & Empty States */
+        .state-container {
+            padding: 5rem;
+            text-align: center;
+            color: var(--text-dim);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .state-icon {
+            font-size: 3.5rem;
+            background: var(--accent-gr);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.5;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border);
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-bright);
+            border-radius: 5px;
+            border: 2px solid var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        @media (max-width: 1024px) {
+
+            .table-head,
+            .log-row {
+                grid-template-columns: 160px 100px 180px 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo-container">
+            <div class="logo-box">
+                <i class="fas fa-microchip"></i>
+            </div>
+            <div class="logo-text">MEGA LOGS</div>
+        </div>
+        <div class="header-actions">
+            <button id="live-toggle" class="btn active" onclick="toggleLive()">
+                <div class="pulse-dot"></div>
+                Live Feed: ON
+            </button>
+            <button class="btn btn-refresh" onclick="loadLogs()">
+                <i class="fas fa-sync-alt"></i>
+                Sync
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="logs-card">
+            <div class="table-head">
+                <div>Captured At</div>
+                <div>Priority</div>
+                <div>Intelligence Source</div>
+                <div>Event Message</div>
+            </div>
+            <div id="logs-container">
+                <div class="state-container">
+                    <span class="loader"></span>
+                    <p>Initializing neural connection...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('logs-container');
+        const liveToggle = document.getElementById('live-toggle');
+        let isLive = true;
+        let refreshInterval = null;
+
+        function toggleLive() {
+            isLive = !isLive;
+            if (isLive) {
+                liveToggle.classList.add('active');
+                liveToggle.innerHTML = `<div class="pulse-dot"></div> Live Feed: ON`;
+                startAutoRefresh();
+            } else {
+                liveToggle.classList.remove('active');
+                liveToggle.innerHTML = `<i class="fas fa-pause-circle" style="color:var(--text-muted)"></i> Live Feed: OFF`;
+                stopAutoRefresh();
+            }
+        }
+
+        function startAutoRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(loadLogs, 8000);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+
+        async function loadLogs() {
+            try {
+                const response = await fetch('/logs/api');
+                if (!response.ok) throw new Error('System link failed');
+
+                const data = await response.json();
+                renderLogs(data);
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="state-container">
+                        <i class="fas fa-exclamation-triangle state-icon" style="color:var(--error)"></i>
+                        <p>Link offline: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderLogs(logs) {
+            if (!logs || logs.length === 0) {
+                container.innerHTML = `
+                    <div class="state-container">
+                        <i class="fas fa-ghost state-icon"></i>
+                        <p>No intelligence events captured yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = logs.map((log, index) => `
+                <div class="log-row" style="animation-delay: ${index * 0.02}s">
+                    <div class="time">${log.timestamp}</div>
+                    <div class="level-cell">
+                        <span class="badge badge-${log.level}">${log.level}</span>
+                    </div>
+                    <div class="source" title="${log.name}">${log.name}</div>
+                    <div class="message">${escapeHtml(log.message)}</div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initial Load & Start Heartbeat
+        loadLogs();
+        startAutoRefresh();
+    </script>
+</body>
+
+</html>
