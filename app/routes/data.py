@@ -257,7 +257,7 @@ async def process_tool(request: Request, project_id: str, process_request:Proces
 
 
 
-data_delete_router = APIRouter( prefix="/process" ,   tags=["files"])
+data_delete_router = APIRouter( prefix="/process" ,   tags=["Files"])
 
 @data_delete_router.delete("/delete/{project_id}")
 async def delete_data(request: Request, project_id: str):

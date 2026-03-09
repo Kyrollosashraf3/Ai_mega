@@ -11,6 +11,7 @@ from fastapi import FastAPI, Request, status
 from app.routes.base import router as home_router
 from app.routes.chat import router as chat_router
 from app.routes.logs import router as logs_router
+from app.routes.rag import router as rag_router
 
 
 from app.routes.data import file_router 
@@ -26,9 +27,9 @@ logger = get_logger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
-    title="MEGA" ,
-    version="0.0.1",
-    description="Mega AI Agent - Production-ready AI with RAG, Memory, and Chat History"
+    title="MEGA_AI" ,
+    version="0.0.2",
+    description="Production-ready AI with Chat, Web Search, RAG, MongoDB, and Pinecone "
 )
 
 
@@ -56,5 +57,6 @@ app.include_router(home_router)
 app.include_router(chat_router)
 app.include_router(file_router)
 app.include_router(data_process_router)
+app.include_router(rag_router)
 app.include_router(data_delete_router)
 app.include_router(logs_router)

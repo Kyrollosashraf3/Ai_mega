@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter, Depends
 from app.config import settings
 
-router = APIRouter(   tags=["V1"],)
+router = APIRouter(   tags=["health"],)
 
 @router.get("/")
 async def health():
