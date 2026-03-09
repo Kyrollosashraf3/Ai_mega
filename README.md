@@ -82,7 +82,29 @@ PINECONE_API_KEY=your_key
 PINECONE_ENVIRONMENT=your_env
 ```
 
-## 🏃 How To Run
+
+
+## 🎯 What you need to do to use RAG
+
+1.  **Upload a file**: Call `/data/upload/{project_id}` with your `project_id`.
+2.  **Process the data**: Run `/process/{project_id}` with the `project_id` and `file_name` to clean, chunk, embed, and store the data in both Pinecone and MongoDB.
+3.  **Search**: Run `/rag/search` with your query, `project_id`, and optional `file_ids` to retrieve the most relevant information.
+
+## 🎯 What you need to do to use Chat
+
+1.  **Select a model**: Fetch available models from `/chat/models`.
+2.  **Send a message**: Call `/chat/chat` with your chosen model and message history. 
+3.  **Streaming (Optional)**: Set `stream: true` to receive real-time token responses.
+
+## 🎯 What you need to do to use Web Search
+
+1.  **Enable Search**: In your `/chat/chat` request, set `web_search_mode` to either `"fast"` or `"deep"`.
+2.  **Ask a Question**: Provide your query in the `messages` list as a `user` role.
+3.  **Get Enriched Results**: The AI will search the live web and provide a response with source citations in `[URL]` format.
+
+
+
+## How To Run
 
 Follow these steps to get the project up and running:
 
