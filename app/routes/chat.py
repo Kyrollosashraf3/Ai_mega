@@ -12,7 +12,7 @@ from app.core.llm.token_counter import estimate_tokens_for_model, count_tokens_f
 logger = get_logger(__name__)
  
 
-router = APIRouter(tags=["chat"])
+router = APIRouter(tags=["Chat"])
 
 @router.get("/models")
 async def get_models():

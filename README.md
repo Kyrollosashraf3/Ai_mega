@@ -65,6 +65,9 @@ Ai_mega/
 ### 🔍 RAG (Retrieval Augmented Generation)
 - `POST /rag/search`: Perform similarity search across project documents to retrieve relevant context.
 
+### 🌐 Web Search
+- `POST /web/search`: Dedicated endpoint for live web searches using Perplexity.
+
 ### 📜 Logs
 - `GET /logs/view`: Access the interactive HTML log viewer.
 - `GET /logs/api`: Fetch structured log data in JSON format.

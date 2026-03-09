@@ -4,7 +4,7 @@ import os
 from app.logs.logs_reader import LogReader
 from pathlib import Path
 
-router = APIRouter(prefix="/logs", tags=["logs"])
+router = APIRouter(prefix="/logs", tags=["Logs"])
 reader = LogReader()
 
 @router.get("/view", response_class=HTMLResponse)

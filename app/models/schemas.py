@@ -44,3 +44,16 @@ class ChunkSearchResponse(BaseModel):
     file_filter_applied: bool
     filtered_files: Optional[List[str]] = None
     chunks: List[dict]
+
+class WebSearchRequest(BaseModel):
+    query: str = Field(..., description="The search query for Perplexity")
+    mode: Optional[str] = Field("fast", description="Search mode: 'fast' or 'deep'")
+    max_tokens: Optional[int] = Field(1024, description="Maximum tokens for the response")
+    temperature: Optional[float] = Field(0.2, description="Sampling temperature")
+    top_p: Optional[float] = Field(0.9, description="Top-p sampling")
+
+class WebSearchResponse(BaseModel):
+    query: str
+    mode: str
+    content: str
+    citations: List[str] = []
