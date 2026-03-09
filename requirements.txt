@@ -28,3 +28,10 @@ tiktoken==0.7.0
 
 # WEB SEARCH
 perplexityai==0.20.0
+
+ftfy==6.3.1    
+pinecone==5.4.2 
+
+# for embedding model HF
+sentence-transformers
+torch

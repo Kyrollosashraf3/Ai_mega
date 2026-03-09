@@ -66,7 +66,7 @@ class AssetModel :
         return asset
     
     async def get_asset (self, asset_project_id : str, asset_type: str):
-
+        """get all project files """
         records = await self.collection.find({
             "asset_project_id": asset_project_id,
             "asset_type": asset_type
@@ -79,7 +79,7 @@ class AssetModel :
 
 
     async def get_asset_record(self, asset_project_id: str, asset_name: str):
-
+        """get ONE file  """
         record = await self.collection.find_one({
             "asset_project_id": asset_project_id,
             "asset_name": asset_name,

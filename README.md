@@ -104,3 +104,27 @@ DEBUG=True
 
 - conda activate mega1
 - uvicorn app.main:app --reload
+
+
+
+
+-------------
+# <span style="color:orange">   RAG     </span>
+
+## 1- route/data
+### endpoint 1 
+upload file > save content in Mongo db
+### endpoint 2
+process file take file from mongo db > chunck > embedding > save in vector db Pinecone 
+### endpoint 3
+delete file chuncks
+
+## 2- route/doctument
+### endpoint 1
+store chunck vector  > get chuncks from mongo db to embedding and store in vector db Pinecone 
+
+### endpoint 2
+take message , file_id or project_id > retrieve top k answers from vector db Pinecone 
+
+### endpoint 3
+same idea in chat request to retrieve answeres > put it with LLM Prompt

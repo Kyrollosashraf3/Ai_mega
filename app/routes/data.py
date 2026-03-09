@@ -9,6 +9,9 @@ from app.models import ProcessRequest , DataChunk , Project , Asset
 from app.db import ProjectModel , chunkModel , AssetModel
 
 from app.config import get_logger ,signal
+from app.core.rag.cleaners_ftfy import clean_text
+from app.core.rag.embeddings import generate_embeddings
+from app.vectordb.store import VectorStore
 logger = get_logger(__name__)
 
 
@@ -76,18 +79,18 @@ async def upload_data( request: Request, project_id: str, file: UploadFile  ):
 
 data_process_router = APIRouter( prefix="/process" ,   tags=["files"])
 
-@data_process_router.post("/upload/{project_id}")
+@data_process_router.post("/{project_id}")
 async def process_tool(request: Request, project_id: str, process_request:ProcessRequest):
    
-   #file_id = process_request.file_id
+    #file_id = process_request.file_id
     chunk_size = process_request.chunk_size
     overlap_size = process_request.overlap_size
     do_reset = process_request.do_reset
 
     # create db instances
     project_model=await ProjectModel.create_instance( db_client= request.app.db_client)
-    chunk_model = await   chunkModel.create_instance( db_client=request.app.db_client)  
-    asset_model = await   AssetModel.create_instance( db_client=request.app.db_client)
+    chunk_model = await   chunkModel.create_instance( db_client= request.app.db_client)  
+    asset_model = await   AssetModel.create_instance( db_client= request.app.db_client)
 
     project = await project_model.get_project( project_id= project_id )
     Data_process = DataProcess(project_id = project_id )
@@ -96,7 +99,12 @@ async def process_tool(request: Request, project_id: str, process_request:Proces
     # Collect all project files 
     project_files_ids = {}
 
-    # if file_id is provided : just 1 file
+
+    #======================================================================#
+    #============== user can put file id or project id ====================#
+    #======================================================================#
+
+       # if file_id is provided : just 1 file
     if process_request.file_id:
 
         # asset_record with Asset schema
@@ -108,13 +116,10 @@ async def process_tool(request: Request, project_id: str, process_request:Proces
         if asset_record is None:
             return JSONResponse(
                 status_code=400,
-                content={
-                    "signal": "FILE_ID process ERROR _ get_asset does not work ",
-                } )
+                content={"signal": "FILE_ID process ERROR _ get_asset does not work" } )
 
         # get_asset returns Asset schema with {new  _id : file_name }
-        project_files_ids = {
-            asset_record.id: asset_record.asset_name }
+        project_files_ids = { asset_record.id: asset_record.asset_name }
        
     else:
         # request without file_id : process all files in project using its _id
@@ -147,9 +152,13 @@ async def process_tool(request: Request, project_id: str, process_request:Proces
     no_files = 0
     
 
+    
+    #======================================================================#
+    #===================== start processing files =========================#
+    #======================================================================#
     """    
     asset_id is new _id of asset/file in asset collection
-    asset_name is name of asset/file in asset collection
+    asset_name is name of file
     """
     for asset_id, asset_name in project_files_ids.items():
         file_content = Data_process.get_file_content(file_id = asset_name)
@@ -163,15 +172,57 @@ async def process_tool(request: Request, project_id: str, process_request:Proces
             chunk_size=chunk_size,
             overlap_size=overlap_size)
 
-
+        logger.info(f"File {asset_name} processed successfully")
         if file_chunks is None or len(file_chunks) == 0:
             return JSONResponse(
                 status_code=400,
-                content={
-                    "signal": "PROCESSING_FAILED"
-                }
-        )
+                content={"signal": "PROCESSING_FAILED" }  )
 
+
+        # 1. Clean chunks
+        for chunk in file_chunks:
+            chunk.page_content = clean_text(chunk.page_content)
+        logger.info(f"File {asset_name} cleaned successfully")
+        
+        # 2. Generate embeddings
+        try:
+            texts_to_embed = [chunk.page_content for chunk in file_chunks]
+            embeddings = generate_embeddings(texts_to_embed)
+            logger.info(f"File {asset_name} embeddings generated successfully")
+        except Exception as e:
+            logger.error(f"Error generating embeddings: {e}")
+            return JSONResponse(
+                status_code=500,
+                content={"signal": "EMBEDDING_FAILED", "error": str(e)}
+            )
+
+        # 3. Store in Pinecone
+        try:
+            vector_store = VectorStore()
+            chunks_for_pinecone = [
+                {
+                    "text": chunk.page_content,
+                    "chunk_index": i,
+                    "source_file": asset_name,
+                    "metadata": chunk.metadata
+                }
+                for i, chunk in enumerate(file_chunks)
+            ]
+            vector_store.upsert_chunks(
+                chunks=chunks_for_pinecone,
+                embeddings=embeddings,
+                namespace=str(project.id)
+            )
+            logger.info(f"File {asset_name} stored in Pinecone successfully")
+        except Exception as e:
+            logger.error(f"Error storing in Pinecone: {e}")
+            # We continue even if Pinecone fails, as we still save to Mongo? 
+            # Or should we fail? User said "process file... > save in vector db Pinecone"
+            # If it fails, maybe we should return error.
+            return JSONResponse(
+                status_code=500,
+                content={"signal": "VECTOR_DB_UPSERT_FAILED", "error": str(e)}
+            )
 
         # prepare to insert chunks to mongo 
         file_chunks_records = [
@@ -187,13 +238,18 @@ async def process_tool(request: Request, project_id: str, process_request:Proces
 
         no_records += await chunk_model.insert_many_chunks(chunks= file_chunks_records)  # with batches
         no_files += 1
+        logger.info(f"File {asset_name} stored in Mongo successfully")
         
-    return JSONResponse(
-        content={
-            "signal": "PROCESSING_SUCCESS",
-            "inserted_chunks": no_records,
-            "inserted_files": no_files  
-        }
+        
+
+    return (
+            {
+                "signal": "PROCESSING_SUCCESS",
+                "inserted_chunks": no_records,
+                "inserted_files": no_files,
+                "file_name": asset_name,
+                "project_id": project_id
+            }
     )
 
 

@@ -16,8 +16,6 @@ class Settings(BaseSettings):
     HOST: str
     PORT: int
 
-    OPEN_AI_KEY: str
-
     FILE_ALLOWED_TYPES: List[str]
     FILE_ALLOWED_SIZE: int 
 
@@ -38,7 +36,14 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str
     MODELS_JSON_PATH: str
     
+    # web search
     PERPLEXITY_API_KEY: str
+
+    # Pinecone
+    PINECONE_API_KEY: str
+    PINECONE_ENVIRONMENT: str
+    PINECONE_INDEX_NAME: str
+    PINECONE_DIMENSION: int
 
 
     model_config = SettingsConfigDict(
