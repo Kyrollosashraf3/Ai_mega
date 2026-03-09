@@ -1,22 +1,27 @@
 # MEGA - AI Agent Framework
 
-MEGA is a production-ready AI agent framework built with FastAPI. It features a robust architecture for handling file uploads, data processing (RAG), and persistent storage using MongoDB.
+MEGA is a production-ready AI agent framework built with FastAPI. It features a robust architecture for handling file uploads, data processing (RAG), and persistent storage using MongoDB and vector database Pinecone.
+
+## ✍️ Author
+Developed and Maintained by **[Kyrollos Ashraf](https://github.com/Kyrollosashraf3)**
+
 
 ## 🚀 Key Features
 
 - **Asynchronous FastAPI Architecture**: High-performance, non-blocking API handling.
-- **File Management**: Support for uploading and processing `text/plain` and `application/pdf` files.
-- **RAG Data Processing**: Automated chunking and metadata extraction for document-based AI workflows.
-- **MongoDB Integration**: Permanent storage for projects and document chunks using Motor (async driver).
-- **Custom Schema Validation**: Robust Pydantic models with custom validators for handling MongoDB ObjectIds.
+- **File Management**: Support for uploading and processing multiple file types.
+- **RAG Data Processing**: Automated chunking, cleaning, and embedding extraction for document-based AI workflows.
+- **Vector Search**: Integration with Pinecone for high-speed similarity search.
+- **MongoDB Integration**: Permanent storage for projects, assets, and document chunks using Motor.
+- **Interactive Log Viewer**: Real-time log monitoring via a dedicated dashboard.
 - **Project-based Isolation**: Data is organized and isolated by `project_id`.
 
 ## 🛠 Tech Stack
 
 - **Framework**: [FastAPI](https://fastapi.tiangolo.com/)
-- **Database**: [MongoDB](https://www.mongodb.com/) (using [Motor](https://motor.readthedocs.io/))
+- **Databases**: [MongoDB](https://www.mongodb.com/) (Motor), [Pinecone](https://www.pinecone.io/)
 - **Data Validation**: [Pydantic v2](https://docs.pydantic.dev/)
-- **File Handling**: [aiofiles](https://github.com/Tinche/aiofiles)
+- **LLM Integration**: OpenAI, Google Gemini, Groq
 - **Environment Management**: [pydantic-settings](https://docs.pydantic.dev/latest/usage/pydantic_settings/)
 
 ## 📂 Project Structure
@@ -24,107 +29,89 @@ MEGA is a production-ready AI agent framework built with FastAPI. It features a 
 ```text
 Ai_mega/
 ├── app/
-│   ├── config/         # Application settings and logging
-│   ├── core/           # Core logic for file processing
-│   ├── db/             # Database models and clients
-│   ├── models/         # Pydantic/Database schemas
-│   ├── routes/         # API endpoints (Chat, Data, Base)
+│   ├── config/         # Application settings and logging configuration
+│   ├── core/           # Core business logic
+│   │   ├── file/       # File processing and management
+│   │   ├── llm/        # LLM provider handlers and utilities
+│   │   │   ├── families/ # API handlers for major providers (OpenAI, Google, etc.)
+│   │   │   └── perplexity/ # specialized perplexity integration
+│   │   └── rag/        # RAG pipeline: cleaning and embeddings
+│   ├── db/             # Database connection and model repositories
+│   ├── logs/           # Log reader and HTML dashboard
+│   ├── models/         # Pydantic schemas and data models
+│   ├── routes/         # API endpoints (Chat, Data, RAG, Logs, etc.)
+│   ├── vectordb/       # Vector database (Pinecone) integration
 │   └── main.py         # Application entry point
+├── docker/             # Docker configuration and compose files
 ├── scripts/            # Utility and verification scripts
-├── my_files/           # local storage for uploaded files
+├── my_files/           # Local storage for physical files
 └── requirements.txt    # Project dependencies
 ```
 
 ## 🔌 API Endpoints
 
-### Health Check
+### 🩺 Health
 - `GET /`: Check application health and version.
 
-### Chat
-- `GET /chat/`: Welcome endpoint for the chat service.
+### 💬 Chat
+- `GET /chat/models`: Retrieve the list of available LLM models and their capabilities.
+- `POST /chat/chat`: Send a chat request. Supports both streaming and non-streaming responses.
 
-### Data & Files
-- `POST /data/upload/{project_id}`: Upload a new file for a project.
-- `POST /process/upload/{project_id}`: Process an uploaded file into chunks.
-- `DELETE /process/delete/{project_id}`: Delete all processed chunks associated with a project.
+### 📁 Data & Files
+- `POST /data/upload/{project_id}`: Upload a new file for a specific project.
+- `POST /process/{project_id}`: Process uploaded files (cleaning -> chunking -> embedding -> Pinecone upsert).
+- `DELETE /process/delete/{project_id}`: Remove all processed chunks for a project from MongoDB.
+
+### 🔍 RAG (Retrieval Augmented Generation)
+- `POST /rag/search`: Perform similarity search across project documents to retrieve relevant context.
+
+### 📜 Logs
+- `GET /logs/view`: Access the interactive HTML log viewer.
+- `GET /logs/api`: Fetch structured log data in JSON format.
 
 ## ⚙️ Configuration
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory based on `.env.example`:
 
 ```env
 APP_NAME=MEGA
 APP_VERSION=0.0.1
-MONGODB_URL= "mongodb://user:password@localhost:27007"
+MONGODB_URL="mongodb://user:password@localhost:27007"
 MONGODB_DATABASE=Ai_mega
-DEBUG=True
+PINECONE_API_KEY=your_key
+PINECONE_ENVIRONMENT=your_env
 ```
 
-## 🏃 Getting Started
+## 🏃 How To Run
 
-1. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+Follow these steps to get the project up and running:
 
-2. **Run the application**:
-   ```bash
-   uvicorn app.main:app --reload
-   ```
+### 1. Infrastructure Setup
+Spin up the required services (MongoDB) using Docker:
+```bash
+cd docker
+docker-compose up -d
+```
 
-3. **Access Documentation**:
-   - Swagger UI: `http://localhost:8000/docs`
-   - Redoc: `http://localhost:8000/redoc`
+### 2. Environment Setup
+Activate your environment and install dependencies:
+```bash
+# Using Conda
+conda activate mega1
 
+# Install requirements
+pip install -r requirements.txt
+```
 
+### 3. Launch the Application
+Start the FastAPI server with auto-reload:
+```bash
+uvicorn app.main:app --reload
+```
 
+### 4. Documentation
+Once running, you can access the interactive API docs at:
+- **Swagger UI**: `http://localhost:8000/docs`
+- **Redoc**: `http://localhost:8000/redoc`
 
-   ## MongoDB
-   we have 2 collections : 
-   1- projects : 
-   2- chunks : 
-
-   they connected with project_id : that _id of project = chunks.project_id  
-   
-      
-
-   WITH username and password
-
-   ## docker 
-
-   docker-compose up -d  
-   it has : mongodb servise as vertual network with image mongo:7-jammy
-   with ROOT_USERNAM and ROOT_PASSWORD from .env file 
-
-
-
-# To Run
-- cd docker
-- docker-compose up -d
-
-- conda activate mega1
-- uvicorn app.main:app --reload
-
-
-
-
--------------
-# <span style="color:orange">   RAG     </span>
-
-## 1- route/data
-### endpoint 1 
-upload file > save content in Mongo db
-### endpoint 2
-process file take file from mongo db > chunck > embedding > save in vector db Pinecone 
-### endpoint 3
-delete file chuncks
-
-## 2- route/doctument
-### endpoint 1
-store chunck vector  > get chuncks from mongo db to embedding and store in vector db Pinecone 
-
-### endpoint 2
-take message , file_id or project_id > retrieve top k answers from vector db Pinecone 
-
-### endpoint 3
-same idea in chat request to retrieve answeres > put it with LLM Prompt
+---
